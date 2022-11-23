@@ -1,4 +1,5 @@
 import { ADS_DISPLAY } from '../constants/constants';
+import {getAll} from "../domain/repositories/cities";
 
 export function isNullUndefined<T>(value: T): boolean {
   return value === undefined || value === null;
@@ -76,4 +77,9 @@ export function isAdsDisplay(state:number) {
 
 export function deleteAccountUrl(url:string,name:string,mailAddress:string,subject:string,message:string){
   return `${url}?name=${name}&mailAddress=${mailAddress}&subject=${subject}&message=${message}`
+}
+
+// まとめてcityは取っておく
+export async function beforeGetCities() {
+  return await getAll();
 }

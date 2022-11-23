@@ -62,3 +62,5 @@ export const USER_METADATA = {
   AVATAR_URL: 'avatar_url',
   PICTURE: 'picture',
 };
+
+export const GEOCODE_BASEURL = 'https://msearch.gsi.go.jp/address-search/AddressSearch?q=';

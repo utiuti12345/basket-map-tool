@@ -1,7 +1,7 @@
 import { Court } from './court';
-import { CityPrefecture } from './city';
+import {City, CityPrefecture} from './city';
 import { isNullUndefined, undefinedToNull } from '../../utils/utils';
-import { DisplayParkHoop } from './parkHoop';
+import {DisplayParkHoop, ParkHoop} from './parkHoop';
 import {
   COURT_TYPE_ASPHALTCOAT, COURT_TYPE_CLAYCOAT, COURT_TYPE_COAT,
   COURT_TYPE_CONCRETECOAT, COURT_TYPE_GRASSCOAT,
@@ -10,6 +10,8 @@ import {
   FREE,
   PAID
 } from '../../constants/constants';
+import {addressConvertToGeocode} from "../../libs/geo/geocode";
+import * as CitiesRepository from "../repositories/cities";
 
 export interface Park {
   park_id: number;
@@ -69,6 +71,11 @@ export interface DisplayPark {
   is_delete: boolean;
   created_at: string;
   update_at?: string | null;
+}
+
+export interface insertPark {
+  park: Park;
+  park_hoop: ParkHoop[];
 }
 
 export function factoryDisplayPark(
@@ -205,34 +212,38 @@ export function getImage(displayPark: DisplayPark): string {
   return displayPark.image_url as string;
 }
 
-export function convertToModel(parseData:any):Park[]{
-  let parks: Park[] = [];
-  parseData.map((item:any) =>{
-    const values:Values = {
+export async function convertToModel(parseData: any): Promise<insertPark[]> {
+  const cities = await CitiesRepository.getAll();
+
+  const promises = parseData.map(async (item: any) => {
+    const cityValues = await convertToAddress(item[5], cities);
+    const values: Values = {
       park_name: item[0],
       court_type: convertToCourtType(item[1]),
       is_free: item[3] === "無料" ? true : false,
       available_time: item[4],
-      city_id: 0,
-      address: item[5],
+      city_id: cityValues.city_id,
+      address: cityValues.address,
       tell: item[6],
       web_page: item[7],
       image_url: undefined,
       memo: item[8],
-      latitude: undefined,
-      longitude: undefined,
+      latitude: cityValues.latitude,
+      longitude: cityValues.longitude,
     }
-    parks = [
-      ...parks,
-      factory(
-          values
-      )
-    ]
+    const parkHoops = item[2] === 'つ' ? null : [{
+      hoop_id: 0,
+      park_id: 0,
+      hoop_count: item[2].replace('つ','') as number,
+      hoop_type: 0,
+    }]
+    return {
+      park:factory(values),
+      parkHoop:parkHoops,
+    }
   })
 
-  parks.shift();
-
-  return parks;
+  return await Promise.all(promises);
 }
 
 export function convertToCourtType(courtType:string):number | undefined{
@@ -259,7 +270,7 @@ export function convertToCourtType(courtType:string):number | undefined{
   return undefined;
 }
 
-export function convertToAddress(str:string):Values {
+export async function convertToAddress(str:string, cities:City[]):Promise<Values> {
   // 郵便番号
   //const postCode = str.match(/^\d{3}-?\d{4}$/)
   // 郵便番号を取り除く
@@ -271,10 +282,48 @@ export function convertToAddress(str:string):Values {
   if(substrAddress.length > 0){
     const postCode = substrAddress[0];
     const prefecture = substrAddress[1];
-    const city = substrAddress[2];
-    const address = substrAddress[3];
+    let city = substrAddress[2];
+    let address = substrAddress[3];
 
+    console.log(substrAddress);
+    if(city.includes('さいたま市')){
+      const tempAddress = city.replace('さいたま市','');
+      address = tempAddress + address;
+      city = 'さいたま市';
+    }
 
+    const geocode = await addressConvertToGeocode(prefecture + city + address);
+    // console.log(prefecture + city + address);
+    // console.log(`${geocode?.latitude} ${geocode?.longitude}`);
+
+    const cityModel = cities.find((it) =>{
+      if(city.includes('伊奈町')){
+        return it.city_id === 557
+      }
+      if(city.includes('小川町')){
+        return it.city_id === 563
+      }
+      return it.city_name === city
+    });
+
+    if(cityModel !== undefined){
+      //console.log(cityModel.city_name);
+    }
+
+    return {
+      park_name: '',
+      court_type: undefined,
+      is_free: undefined,
+      available_time: undefined,
+      city_id: cityModel?.city_id,
+      address: address,
+      tell: undefined,
+      web_page: undefined,
+      image_url: undefined,
+      memo: undefined,
+      latitude: geocode?.latitude,
+      longitude: geocode?.longitude,
+    }
   }
 
   return {
