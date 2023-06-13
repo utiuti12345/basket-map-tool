@@ -4,6 +4,7 @@ import * as CitiesRepository from "./domain/repositories/cities";
 import {beforeGetCities} from "./utils/utils";
 import * as ParksRepository from "./domain/repositories/parks";
 import * as ParkHoopsRepository from "./domain/repositories/parkHoops";
+import {addressConvertToGeocode} from "./libs/geo/geocode";
 
 require('dotenv').config();
 
@@ -17,11 +18,22 @@ require('dotenv').config();
 //     })
 
 main();
+//geoCording();
+
+// アドレスから経度/緯度を求める
+// 雑に置いとく
+async function geoCording() {
+    const data = readFile("/Users/saotome/Desktop/basket-map-for-web/tsv/temp_address.csv");
+    data.map(async (item: any) => {
+        const geo = await addressConvertToGeocode(item[4]);
+        console.log(`${item[0]}\t${geo?.latitude}\t${geo?.longitude}`);
+    })
+}
 
 async function main() {
-    const data = readFile("/Users/saotome/Desktop/basket-map-for-web/tsv/考えるバスケットの会.com/court-chiba.csv");
+    const data = readFile("path_csv");
+    const parks = await convertToModel(data,27);
 
-    const parks = await convertToModel(data);
     await Promise.all(parks.map(async it => {
         const searchParks = await ParksRepository.searchByParkName(it.park.park_name);
         if (searchParks.length == 0) {

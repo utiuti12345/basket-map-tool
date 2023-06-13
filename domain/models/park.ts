@@ -12,6 +12,7 @@ import {
 } from '../../constants/constants';
 import {addressConvertToGeocode} from "../../libs/geo/geocode";
 import * as CitiesRepository from "../repositories/cities";
+import * as ParksRepository from '../repositories/parks';
 
 export interface Park {
   park_id: number;
@@ -212,8 +213,9 @@ export function getImage(displayPark: DisplayPark): string {
   return displayPark.image_url as string;
 }
 
-export async function convertToModel(parseData: any): Promise<insertPark[]> {
+export async function convertToModel(parseData: any, prefectureId: number): Promise<insertPark[]> {
   const cities = await CitiesRepository.getAll();
+  const displayParks = await ParksRepository.getAllDisplayPark();
 
   const promises = parseData.map(async (item: any) => {
     const cityValues = await convertToAddress(item[5], cities);
@@ -277,13 +279,16 @@ export async function convertToAddress(str:string, cities:City[]):Promise<Values
   //const address = str.replace('〒','').replace(/^\d{3}-?\d{4}$/,'').trim()
   // 県名取り出し
   const substrAddress = str
-      .replace(/(...??[都道府県])((?:旭川|伊達|石狩|盛岡|奥州|田村|南相馬|那須塩原|東村山|武蔵村山|羽村|十日町|上越|富山|野々市|大町|蒲郡|四日市|姫路|大和郡山|廿日市|下松|岩国|田川|大村)市|.+?郡(?:玉村|大町|.+?)[町村]|.+?市.+?区|.+?[市区町村])(.+)/, "$1 $2 $3")
+      .replace(/(...??[都道府県])((?:旭川|伊達|石狩|盛岡|奥州|田村|南相馬|那須塩原|東村山|武蔵村山|羽村|十日町|上越|富山|野々市|大町|蒲郡|四日市|姫路|大和郡山|廿日市|下松|岩国|田川|大村|宮古|富良野|別府|佐伯|黒部|小諸|塩尻|玉野|周南)市|(?:余市|高市|[^市]{2,3}?)郡(?:玉村|大町|.{1,5}?)[町村]|(?:.{1,4}市)?[^町]{1,4}?区|.{1,7}?[市町村])(.+)/, "$1 $2 $3")
       .split(' ')
   if(substrAddress.length > 0){
-    const postCode = substrAddress[0];
-    const prefecture = substrAddress[1];
-    let city = substrAddress[2];
-    let address = substrAddress[3];
+    // const postCode = substrAddress[0];
+    // const prefecture = substrAddress[1];
+    // let city = substrAddress[2];
+    // let address = substrAddress[3];
+    const prefecture = substrAddress[0];
+    let city = substrAddress[1];
+    let address = substrAddress[2];
 
     console.log(substrAddress);
     if(city.includes('さいたま市')){
@@ -292,22 +297,42 @@ export async function convertToAddress(str:string, cities:City[]):Promise<Values
       city = 'さいたま市';
     }
 
+    if(city.includes('千葉市')){
+      const tempAddress = city.replace('千葉市','');
+      address = tempAddress + address;
+      city = '千葉市';
+    }
+
+    if(city.includes('大阪市')){
+      const tempAddress = city.replace('大阪市','');
+      address = tempAddress + address;
+      city = '大阪市';
+    }
+
+    if(city.includes('堺市')){
+      const index = city.indexOf('市')
+      const tempAddress = city.replace('堺市','');
+      address = tempAddress + address;
+      city = '堺市';
+    }
+
     const geocode = await addressConvertToGeocode(prefecture + city + address);
     // console.log(prefecture + city + address);
     // console.log(`${geocode?.latitude} ${geocode?.longitude}`);
 
-    const cityModel = cities.find((it) =>{
+    const cityModel = cities.filter((it) => {
       if(city.includes('伊奈町')){
         return it.city_id === 557
       }
       if(city.includes('小川町')){
         return it.city_id === 563
       }
-      return it.city_name === city
+      return it.city_name == city
     });
 
-    if(cityModel !== undefined){
-      //console.log(cityModel.city_name);
+    if(cityModel.length === 0){
+      console.log('なし');
+      throw 'なし'
     }
 
     return {
@@ -315,7 +340,7 @@ export async function convertToAddress(str:string, cities:City[]):Promise<Values
       court_type: undefined,
       is_free: undefined,
       available_time: undefined,
-      city_id: cityModel?.city_id,
+      city_id: cityModel[0]?.city_id,
       address: address,
       tell: undefined,
       web_page: undefined,
