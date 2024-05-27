@@ -420,7 +420,7 @@ export async function insert(park: Park): Promise<number> {
       created_at: park.created_at,
       update_at: park.update_at,
     })
-    .single();
+    .select();
 
   if (error) {
     throw error;
@@ -428,7 +428,7 @@ export async function insert(park: Park): Promise<number> {
 
   if (data) {
     // @ts-ignore
-      return data.park_id;
+      return data[0].park_id;
   }
 
   return 0;
@@ -485,4 +485,8 @@ export async function searchByParkName(parkName:string):Promise<Park[]> {
         return data;
     }
     return [];
+}
+
+export async function uploadParkImage(parkId: number, ): Promise<void> {
+
 }

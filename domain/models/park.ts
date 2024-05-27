@@ -1,10 +1,13 @@
-import { Court } from './court';
+import {Court} from './court';
 import {City, CityPrefecture} from './city';
-import { isNullUndefined, undefinedToNull } from '../../utils/utils';
+import {isNullUndefined, undefinedToNull} from '../../utils/utils';
 import {DisplayParkHoop, ParkHoop} from './parkHoop';
 import {
-  COURT_TYPE_ASPHALTCOAT, COURT_TYPE_CLAYCOAT, COURT_TYPE_COAT,
-  COURT_TYPE_CONCRETECOAT, COURT_TYPE_GRASSCOAT,
+  COURT_TYPE_ASPHALTCOAT,
+  COURT_TYPE_CLAYCOAT,
+  COURT_TYPE_COAT,
+  COURT_TYPE_CONCRETECOAT,
+  COURT_TYPE_GRASSCOAT,
   COURT_TYPE_SANDCOAT,
   COURT_TYPE_STREETCOAT,
   FREE,
@@ -12,7 +15,6 @@ import {
 } from '../../constants/constants';
 import {addressConvertToGeocode} from "../../libs/geo/geocode";
 import * as CitiesRepository from "../repositories/cities";
-import * as ParksRepository from '../repositories/parks';
 
 export interface Park {
   park_id: number;
@@ -76,7 +78,8 @@ export interface DisplayPark {
 
 export interface insertPark {
   park: Park;
-  park_hoop: ParkHoop[];
+  parkHoop: ParkHoop[];
+  imageUrl: string | null;
 }
 
 export function factoryDisplayPark(
@@ -215,10 +218,11 @@ export function getImage(displayPark: DisplayPark): string {
 
 export async function convertToModel(parseData: any, prefectureId: number): Promise<insertPark[]> {
   const cities = await CitiesRepository.getAll();
-  const displayParks = await ParksRepository.getAllDisplayPark();
+  //const displayParks = await ParksRepository.getAllDisplayPark();
 
-  const promises = parseData.map(async (item: any) => {
+  return await Promise.all(await parseData.map(async (item: any) => {
     const cityValues = await convertToAddress(item[5], cities);
+    console.log(`${cityValues.city_id}\t${cityValues.address}\t${cityValues.latitude}\t${cityValues.longitude}`);
     const values: Values = {
       park_name: item[0],
       court_type: convertToCourtType(item[1]),
@@ -229,23 +233,22 @@ export async function convertToModel(parseData: any, prefectureId: number): Prom
       tell: item[6],
       web_page: item[7],
       image_url: undefined,
-      memo: item[8],
+      memo: undefined,
       latitude: cityValues.latitude,
       longitude: cityValues.longitude,
     }
     const parkHoops = item[2] === 'つ' ? null : [{
       hoop_id: 0,
       park_id: 0,
-      hoop_count: item[2].replace('つ','') as number,
+      hoop_count: item[2].replace('つ', '') as number,
       hoop_type: 0,
     }]
     return {
-      park:factory(values),
-      parkHoop:parkHoops,
+      park: factory(values),
+      parkHoop: parkHoops,
+      imageUrl: item[8] === undefined ? null : item[8]
     }
-  })
-
-  return await Promise.all(promises);
+  }));
 }
 
 export function convertToCourtType(courtType:string):number | undefined{
@@ -290,49 +293,183 @@ export async function convertToAddress(str:string, cities:City[]):Promise<Values
     let city = substrAddress[1];
     let address = substrAddress[2];
 
-    console.log(substrAddress);
-    if(city.includes('さいたま市')){
-      const tempAddress = city.replace('さいたま市','');
-      address = tempAddress + address;
-      city = 'さいたま市';
-    }
-
-    if(city.includes('千葉市')){
-      const tempAddress = city.replace('千葉市','');
-      address = tempAddress + address;
-      city = '千葉市';
-    }
-
-    if(city.includes('大阪市')){
-      const tempAddress = city.replace('大阪市','');
-      address = tempAddress + address;
-      city = '大阪市';
-    }
-
-    if(city.includes('堺市')){
-      const index = city.indexOf('市')
-      const tempAddress = city.replace('堺市','');
-      address = tempAddress + address;
-      city = '堺市';
-    }
+    // console.log(prefecture);
+    // console.log(city);
+    // console.log(address);
+    // if(city.includes('さいたま市')){
+    //   const tempAddress = city.replace('さいたま市','');
+    //   address = tempAddress + address;
+    //   city = 'さいたま市';
+    // }
+    //
+    // if(city.includes('千葉市')){
+    //   const tempAddress = city.replace('千葉市','');
+    //   address = tempAddress + address;
+    //   city = '千葉市';
+    // }
+    //
+    // if(city.includes('大阪市')){
+    //   const tempAddress = city.replace('大阪市','');
+    //   address = tempAddress + address;
+    //   city = '大阪市';
+    // }
+    //
+    // if(city.includes('堺市')){
+    //   const index = city.indexOf('市')
+    //   const tempAddress = city.replace('堺市','');
+    //   address = tempAddress + address;
+    //   city = '堺市';
+    // }
 
     const geocode = await addressConvertToGeocode(prefecture + city + address);
     // console.log(prefecture + city + address);
     // console.log(`${geocode?.latitude} ${geocode?.longitude}`);
-
+    console.log(city);
     const cityModel = cities.filter((it) => {
-      if(city.includes('伊奈町')){
-        return it.city_id === 557
+      if (city !== undefined){
+        if(city.includes('伊奈町')){
+          return it.city_id === 557
+        }
+        if(city.includes('小川町')){
+          return it.city_id === 563
+        }
+        if (city.includes('遠賀郡')){
+          city = city.replace('遠賀郡','');
+        }
+        if (city.includes('京都郡')){
+          city = city.replace('京都郡','');
+        }
+        if (city.includes('鞍手郡')){
+          city = city.replace('鞍手郡','');
+        }
+        if (city.includes('糟屋郡')){
+          city = city.replace('糟屋郡','');
+        }
+        if (city.includes('田川郡')){
+          city = city.replace('田川郡','');
+        }
+        if (city.includes('築上郡')){
+          city = city.replace('築上郡','');
+        }
+        if (city.includes('嘉穂郡')){
+          city = city.replace('嘉穂郡','');
+        }
+        if (city.includes('西松浦郡')){
+          city = city.replace('西松浦郡','');
+        }
+        if (city.includes('杵島郡')){
+          city = city.replace('杵島郡','');
+        }
+        if (city.includes('三養基郡')){
+          city = city.replace('三養基郡','');
+        }
+        if (city.includes('朝倉郡')){
+          city = city.replace('朝倉郡','');
+        }
+        if (city.includes('藤津郡')){
+          city = city.replace('藤津郡','');
+        }
+        if (city.includes('神埼郡')){
+            city = city.replace('神埼郡','');
+        }
+        if (city.includes('西彼杵郡')){
+            city = city.replace('西彼杵郡','');
+        }
+        if (city.includes('中頭郡')){
+          city = city.replace('中頭郡','');
+        }
+
+
+        if (city.includes('福岡市')){
+          if (city.includes('城南区')){
+            city = city.replace('城南区','');
+            address = "城南区" + address;
+          }
+          if (city.includes('東区')){
+            city = city.replace('東区','');
+            address = "東区" + address;
+          }
+          if (city.includes('南区')){
+            city = city.replace('南区','');
+            address = "南区" + address;
+          }
+          if (city.includes('中央区')){
+            city = city.replace('中央区','');
+            address = "中央区" + address;
+          }
+          if (city.includes('早良区')){
+            city = city.replace('早良区','');
+            address = "早良区" + address;
+          }
+          if (city.includes('西区')){
+            city = city.replace('西区','');
+            address = "西区" + address;
+          }
+          if (city.includes('博多区')) {
+            city = city.replace('博多区', '');
+            address = "博多区" + address;
+          }
+        }
+        if (city.includes('北九州市')){
+          if (city.includes('小倉北区')){
+            city = city.replace('小倉北区','');
+            address = "小倉北区" + address;
+          }
+          if (city.includes('小倉南区')){
+            city = city.replace('小倉南区','');
+            address = "小倉南区" + address;
+          }
+          if (city.includes('八幡東区')){
+            city = city.replace('八幡東区','');
+            address = "八幡東区" + address;
+          }
+          if (city.includes('八幡西区')){
+            city = city.replace('八幡西区','');
+            address = "八幡西区" + address;
+          }
+          if (city.includes('門司区')){
+            city = city.replace('門司区','');
+            address = "門司区" + address;
+          }
+          if (city.includes('若松区')){
+            city = city.replace('若松区','');
+            address = "若松区" + address;
+          }
+          if (city.includes('戸畑区')){
+            city = city.replace('戸畑区','');
+            address = "戸畑区" + address;
+          }
+        }
+        if (city.includes('熊本市')){
+            if (city.includes('中央区')){
+                city = city.replace('中央区','');
+                address = "中央区" + address;
+            }
+            if (city.includes('東区')){
+                city = city.replace('東区','');
+                address = "東区" + address;
+            }
+            if (city.includes('西区')){
+                city = city.replace('西区','');
+                address = "西区" + address;
+            }
+            if (city.includes('南区')){
+                city = city.replace('南区','');
+                address = "南区" + address;
+            }
+            if (city.includes('北区')){
+                city = city.replace('北区','');
+                address = "北区" + address;
+            }
+        }
       }
-      if(city.includes('小川町')){
-        return it.city_id === 563
-      }
+
       return it.city_name == city
     });
 
     if(cityModel.length === 0){
       console.log('なし');
-      throw 'なし'
+      console.log(prefecture + city + address);
     }
 
     return {

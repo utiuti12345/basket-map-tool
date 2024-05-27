@@ -4,10 +4,10 @@
   "description": "",
   "main": "index.ts",
   "scripts": {
-    "dev-start": "../node_modules/.bin/dotenv -e .env.development npm run build:live",
-    "local-start": "../node_modules/.bin/dotenv -e .env.local npm run build:live",
-    "prod-start": "../node_modules/.bin/dotenv -e .env.production npm run build:live",
-    "build": "../node_modules/.bin/tsc -p import_csv",
+    "dev-start": "./node_modules/.bin/dotenv -e .env.development npm run build:live",
+    "local-start": "./node_modules/.bin/dotenv -e .env.local npm run build:live",
+    "prod-start": "./node_modules/.bin/dotenv -e .env.production npm run build:live",
+    "build": "./node_modules/.bin/tsc -p import_csv",
     "build:live": "nodemon --watch 'src/**/*.ts' --exec 'ts-node' index.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
