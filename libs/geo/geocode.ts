@@ -30,8 +30,8 @@ export async function addressConvertToGeocode(address: string): Promise<Geo | nu
     const parseData:geoResponse[] = JSON.parse(JSON.stringify(res.data));
 
     if (parseData.length > 0){
-        const latitude = parseData[0].geometry.coordinates[0]
-        const longitude = parseData[0].geometry.coordinates[1]
+        const longitude = parseData[0].geometry.coordinates[0]
+        const latitude = parseData[0].geometry.coordinates[1]
 
         return {latitude,longitude}
     }

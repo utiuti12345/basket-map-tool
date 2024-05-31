@@ -33,44 +33,51 @@ async function geoCording() {
 }
 
 async function main() {
-    const data = readFile("/Users/saotome/Desktop/basket-map-for-web/tsv/temp_address.csv");
+    const data = readFile("/Users/saotome/Desktop/basket-map-for-web/tsv/temp_address2.csv");
     const parks = await convertToModel(data,27);
 
+    let count = 1;
     await Promise.all(parks.map(async it => {
         const searchParks = await ParksRepository.searchByParkName(it.park.park_name);
         if (searchParks.length == 0) {
-            const id = await ParksRepository.insert(it.park);
-            it.park.park_id = id;
-            if (it.parkHoop !== null && it.parkHoop !== undefined && it.parkHoop.length != 0) {
-                var count = 1;
-                it.parkHoop.map(async it => {
-                    it.hoop_id = count;
-                    it.park_id = id;
-                    await ParkHoopsRepository.insertParkHoops(it);
-                    count++;
-                });
-            }
-            if (it.imageUrl !== null && it.imageUrl !== undefined && it.imageUrl.length != 0) {
-                try{
-                    const res = await axios.get(it.imageUrl, {responseType: 'arraybuffer'});
-                    const arrayBuffer = res.data;
-                    const buffer = Buffer.from(arrayBuffer);
-                    await uploadByte(buffer, `park-${it.park.park_id}-1.png`);
-                    await ParksRepository.update({
-                        ...it.park,
-                        image_url: `park-${it.park.park_id}-1.png`
+            try{
+                const id = await ParksRepository.insert(it.park);
+                it.park.park_id = id;
+                if (it.parkHoop !== null && it.parkHoop !== undefined && it.parkHoop.length != 0) {
+                    var count = 1;
+                    it.parkHoop.map(async it => {
+                        it.hoop_id = count;
+                        it.park_id = id;
+                        await ParkHoopsRepository.insertParkHoops(it);
+                        count++;
                     });
-                }catch (e) {
-                    console.log(e);
-
-                    console.log(`画像のアップロードに失敗しました:${it.park.park_id}`);
-                    console.log(`${it.park.park_id}`);
-                    console.log(`${it.park.park_name}`);
-                    console.log(`${it.imageUrl}`);
-
                 }
+                if (it.imageUrl !== null && it.imageUrl !== undefined && it.imageUrl.length != 0) {
+                    try{
+                        const res = await axios.get(it.imageUrl, {responseType: 'arraybuffer'});
+                        const arrayBuffer = res.data;
+                        const buffer = Buffer.from(arrayBuffer);
+                        await uploadByte(buffer, `park-${it.park.park_id}-1.png`);
+                        await ParksRepository.update({
+                            ...it.park,
+                            image_url: `park-${it.park.park_id}-1.png`
+                        });
+                    }catch (e) {
+                        console.log(e);
+
+                        console.log(`画像のアップロードに失敗しました:${it.park.park_id}`);
+                        console.log(`${it.park.park_id}`);
+                        console.log(`${it.park.park_name}`);
+                        console.log(`${it.imageUrl}`);
+
+                    }
+                }
+
+                console.log(`${it.park.park_name}:${id}`)
             }
-            console.log(`${it.park.park_name}:${id}`)
+            catch(e){
+                console.log(e);
+            }
         } else {
             console.log(`${it.park.park_name}は既に公園の登録があります`);
         }

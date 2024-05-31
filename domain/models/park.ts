@@ -222,7 +222,7 @@ export async function convertToModel(parseData: any, prefectureId: number): Prom
 
   return await Promise.all(await parseData.map(async (item: any) => {
     const cityValues = await convertToAddress(item[5], cities);
-    console.log(`${cityValues.city_id}\t${cityValues.address}\t${cityValues.latitude}\t${cityValues.longitude}`);
+    //console.log(`${cityValues.city_id}\t${cityValues.address}\t${cityValues.latitude}\t${cityValues.longitude}`);
     const values: Values = {
       park_name: item[0],
       court_type: convertToCourtType(item[1]),
@@ -237,12 +237,29 @@ export async function convertToModel(parseData: any, prefectureId: number): Prom
       latitude: cityValues.latitude,
       longitude: cityValues.longitude,
     }
-    const parkHoops = item[2] === 'つ' ? null : [{
+    let parkHoops = item[2] === 'つ' ? [] : [{
       hoop_id: 0,
       park_id: 0,
       hoop_count: item[2].replace('つ', '') as number,
       hoop_type: 0,
-    }]
+    }];
+    if (item[9] === "※2つはミニバス用"){
+        parkHoops.push({
+            hoop_id: 0,
+            park_id: 0,
+            hoop_count: 2,
+            hoop_type: 1,
+        });
+    }
+    if (item[9] === "※1つはミニバス用"){
+        parkHoops.push({
+          hoop_id: 0,
+          park_id: 0,
+          hoop_count: 1,
+          hoop_type: 1,
+        });
+    }
+
     return {
       park: factory(values),
       parkHoop: parkHoops,
@@ -376,7 +393,55 @@ export async function convertToAddress(str:string, cities:City[]):Promise<Values
             city = city.replace('西彼杵郡','');
         }
         if (city.includes('中頭郡')){
-          city = city.replace('中頭郡','');
+            city = city.replace('中頭郡','');
+        }
+        if (city.includes('綾歌郡')){
+            city = city.replace('綾歌郡','');
+        }
+        if (city.includes('小豆郡')){
+            city = city.replace('小豆郡','');
+        }
+        if (city.includes('仲多度郡')){
+            city = city.replace('仲多度郡','');
+        }
+        if (city.includes('海部郡')){
+            city = city.replace('海部郡','');
+        }
+        if (city.includes('三好郡')){
+            city = city.replace('三好郡','');
+        }
+        if (city.includes('那賀郡')){
+            city = city.replace('那賀郡','');
+        }
+        if (city.includes('海部郡')){
+            city = city.replace('海部郡','');
+        }
+        if (city.includes('板野郡')){
+            city = city.replace('板野郡','');
+        }
+        if (city.includes('美馬郡')){
+            city = city.replace('美馬郡','');
+        }
+        if (city.includes('名西郡')){
+            city = city.replace('名西郡','');
+        }
+        if (city.includes('名東郡')){
+            city = city.replace('名東郡','');
+        }
+        if (city.includes('香川郡')){
+            city = city.replace('香川郡','');
+        }
+        if (city.includes('安芸郡')){
+            city = city.replace('安芸郡','');
+        }
+        if (city.includes('隠岐郡')){
+            city = city.replace('隠岐郡','');
+        }
+        if (city.includes('西伯郡')){
+            city = city.replace('西伯郡','');
+        }
+        if (city.includes('東伯郡')){
+            city = city.replace('東伯郡','');
         }
 
 
@@ -460,6 +525,58 @@ export async function convertToAddress(str:string, cities:City[]):Promise<Values
             if (city.includes('北区')){
                 city = city.replace('北区','');
                 address = "北区" + address;
+            }
+        }
+        if (city.includes('広島市')){
+            if (city.includes('安佐南区')){
+                city = city.replace('安佐南区','');
+                address = "安佐南区" + address;
+            }
+            if (city.includes('安佐北区')){
+                city = city.replace('安佐北区','');
+                address = "安佐北区" + address;
+            }
+            if (city.includes('安芸区')){
+                city = city.replace('安芸区','');
+                address = "安芸区" + address;
+            }
+            if (city.includes('佐伯区')){
+                city = city.replace('佐伯区','');
+                address = "佐伯区" + address;
+            }
+            if (city.includes('中区')){
+                city = city.replace('中区','');
+                address = "中区" + address;
+            }
+            if (city.includes('南区')){
+                city = city.replace('南区','');
+                address = "南区" + address;
+            }
+            if (city.includes('東区')){
+                city = city.replace('東区','');
+                address = "東区" + address;
+            }
+            if (city.includes('西区')){
+                city = city.replace('西区','');
+                address = "西区" + address;
+            }
+        }
+        if (city.includes('岡山市')){
+            if (city.includes('北区')){
+                city = city.replace('北区','');
+                address = "北区" + address;
+            }
+            if (city.includes('中区')){
+                city = city.replace('中区','');
+                address = "中区" + address;
+            }
+            if (city.includes('東区')){
+                city = city.replace('東区','');
+                address = "東区" + address;
+            }
+            if (city.includes('南区')){
+                city = city.replace('南区','');
+                address = "南区" + address;
             }
         }
       }
