@@ -7,7 +7,7 @@
 ```
 basket-map-tool/
 ├── packages/
-│   └── csv-import-park/   # 公園CSVインポートツール
+│   └── csv_import_park/   # 公園CSVインポートツール
 ├── libs/                 # 共通ライブラリ
 ├── domain/               # ドメイン層（モデル・リポジトリ）
 ├── utils/                # ユーティリティ
@@ -35,19 +35,19 @@ yarn install
 3. **各パッケージの依存追加（例: axios）**
 
 ```sh
-yarn workspace csv-import-park add axios
+yarn workspace csv_import_park add axios
 ```
 
 4. **TypeScriptやNode型定義が必要な場合**
 
 ```sh
-yarn workspace csv-import-park add -D @types/node
+yarn workspace csv_import_park add -D @types/node
 ```
 
 5. **各パッケージのスクリプト実行例**
 
 ```sh
-cd packages/csv-import-park
+cd packages/csv_import_park
 yarn start
 ```
 

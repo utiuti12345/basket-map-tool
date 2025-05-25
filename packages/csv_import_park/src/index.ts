@@ -6,26 +6,18 @@ import {addressConvertToGeocode} from "../../../libs/geo/geocode";
 import {uploadByte} from "../../../libs/storage/storage";
 import axios from "axios";
 import { Buffer } from 'buffer';
-import dotenv from "dotenv";
+import path from "path";
 
-// NODE_ENVなどで分岐
-const envFile =
-  process.env.NODE_ENV === "production"
-    ? "../../../.env.production"
-    : process.env.NODE_ENV === "local"
-    ? "../../../.env.local"
-    : "../../../.env.development";
-
-dotenv.config({ path: envFile });
-
-console.log(process.env)
+// ここを適宜変える
+const fileName = "temp_address1.csv";
 
 main();
 
 // アドレスから経度/緯度を求める
 // 雑に置いとく
 async function geoCording() {
-    const data = readFile("/Users/saotome/Desktop/basket-map-for-web/tsv/temp_address1.csv");
+    const csvPath = path.join(__dirname, "../srcCsv/", fileName);
+    const data = readFile(csvPath);
     data.map(async (item: any) => {
         const geo = await addressConvertToGeocode(item[4]);
         console.log(`${item[0]}\t${geo?.latitude}\t${geo?.longitude}`);
@@ -33,7 +25,8 @@ async function geoCording() {
 }
 
 async function main() {
-    const data = readFile("/Users/saotome/Desktop/basket-map-for-web/tsv/temp_address3.csv");
+    const csvPath = path.join(__dirname, "../srcCsv/", fileName);
+    const data = readFile(csvPath);
     const parks = await convertToModel(data,27);
 
     let count = 1;

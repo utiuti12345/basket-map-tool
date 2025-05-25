@@ -8,9 +8,9 @@
   "author": "",
   "license": "ISC",
   "scripts": {
-    "start": "yarn workspace csv-import-park start",
-    "start:dev": "yarn workspace csv-import-park start:dev",
-    "start:prod": "yarn workspace csv-import-park start:prod",
-    "start:local": "yarn workspace csv-import-park start:local"
+    "start": "yarn workspace csv_import_park start",
+    "start:dev": "yarn workspace csv_import_park start:dev",
+    "start:prod": "yarn workspace csv_import_park start:prod",
+    "start:local": "yarn workspace csv_import_park start:local"
   }
 }
