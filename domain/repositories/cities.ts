@@ -27,7 +27,10 @@ export async function getCitiesByPrefectureId(prefectureId: number): Promise<Cit
     return [];
   }
 
-  return data;
+  return data.map((item: any) => ({
+    ...item,
+    prefecture: Array.isArray(item.prefecture) ? item.prefecture[0] : item.prefecture,
+  }));
 }
 
 export async function getCityPrefectureByCityId(cityId: number): Promise<CityPrefecture> {
@@ -59,7 +62,10 @@ export async function getCityPrefectureByCityId(cityId: number): Promise<CityPre
     };
   }
 
-  return data;
+  return {
+    ...data,
+    prefecture: Array.isArray(data.prefecture) ? data.prefecture[0] : data.prefecture,
+  };
 }
 
 export async function getCityByCityId(cityId: number): Promise<City> {
@@ -95,5 +101,8 @@ export async function getCityPrefectureByCityIds(cityIds: number[]): Promise<Cit
     return [];
   }
 
-  return data;
+  return data.map((item: any) => ({
+    ...item,
+    prefecture: Array.isArray(item.prefecture) ? item.prefecture[0] : item.prefecture,
+  }));
 }
