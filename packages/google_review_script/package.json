@@ -1,0 +1,20 @@
+{
+  "name": "google_review_script",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "scripts": {
+    "start": "ts-node src/index.ts",
+    "start:dev": "NODE_ENV=development ts-node src/index.ts",
+    "start:prod": "NODE_ENV=production ts-node src/index.ts",
+    "start:local": "NODE_ENV=local ts-node src/index.ts"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.21",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.8.3"
+  },
+  "dependencies": {
+    "csv-writer": "^1.6.0"
+  }
+}

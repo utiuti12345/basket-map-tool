@@ -11,6 +11,10 @@
     "start": "yarn workspace csv_import_park start",
     "start:dev": "yarn workspace csv_import_park start:dev",
     "start:prod": "yarn workspace csv_import_park start:prod",
-    "start:local": "yarn workspace csv_import_park start:local"
+    "start:local": "yarn workspace csv_import_park start:local",
+    "google-review": "yarn workspace google_review_script start",
+    "google-review:dev": "yarn workspace google_review_script start:dev",
+    "google-review:prod": "yarn workspace google_review_script start:prod",
+    "google-review:local": "yarn workspace google_review_script start:local"
   }
 }

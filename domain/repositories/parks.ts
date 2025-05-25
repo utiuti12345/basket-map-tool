@@ -8,6 +8,7 @@ import { convertStringToNull, isNullUndefined, undefinedToNull } from '../../uti
 import {
   COURT_TYPE_ASPHALTCOAT,
   COURT_TYPE_CLAYCOAT,
+  COURT_TYPE_COAT,
   COURT_TYPE_CONCRETECOAT,
   COURT_TYPE_GRASSCOAT,
   COURT_TYPE_SANDCOAT,
@@ -509,3 +510,64 @@ export async function updateCourt(park: Park,park_id: number): Promise<void> {
 export async function uploadParkImage(parkId: number, ): Promise<void> {
 
 }
+
+export async function getOutdoorPark(): Promise<DisplayPark[]> {
+    const { data, error } = await supabase
+      .from('park')
+      .select(
+        `
+              park_id,
+              park_name,
+              court_type,
+              court(court_name),
+              is_free,
+              available_time,
+              city_id,
+              city(city_name),
+              address,
+              tell,
+              web_page,
+              image_url,
+              memo,
+              latitude,
+              longitude,
+              request_deletion,
+              is_delete,
+              created_at,
+              update_at
+          `,
+      )
+      .eq('is_delete', OFF)
+      .neq('court_type', COURT_TYPE_COAT);
+  
+    if (error) {
+      console.log('error');
+      throw error;
+    }
+  
+    if (!data) {
+      return [];
+    } else {
+      const cityIds = data.map((park) => (park.city_id === undefined ? 0 : park.city_id));
+      const parkIds = data.map((park) => (park.park_id === undefined ? 0 : park.park_id));
+  
+      const cityPrefectures = await citiesRepository.getCityPrefectureByCityIds(cityIds);
+      const displayParkHoops = await parkHoopsRepository.getDisplayParkHoopsByParkIds(parkIds);
+      const courts = await courtRepository.getCourtAll();
+  
+      const displayParks = Promise.all(
+        data.map(async (park) => {
+          const cityPrefecture = cityPrefectures.find((cityPre) => cityPre.city_id == park.city_id);
+          const displayParkHoop = displayParkHoops.filter(
+            (dispParkHoop) => dispParkHoop.park_id === park.park_id,
+          );
+          const court = courts.find((court) => court.court_type === park.court_type);
+          const imageUrl = await getPublicUrl(park?.image_url);
+  
+          return factoryDisplayPark(park, displayParkHoop, court, cityPrefecture, imageUrl);
+        }),
+      );
+  
+      return displayParks;
+    }
+  }
