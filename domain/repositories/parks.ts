@@ -487,6 +487,25 @@ export async function searchByParkName(parkName:string):Promise<Park[]> {
     return [];
 }
 
+export async function updateCourt(park: Park,park_id: number): Promise<void> {
+    const { data, error } = await supabase
+        .from('park')
+        .update({
+            court_type: park.court_type,
+            update_at: park.update_at,
+        })
+        .eq('park_id', park_id);
+
+    if (error) {
+        console.log('エラー');
+        console.log(error);
+        throw error;
+    }
+
+    if (data) {
+    }
+}
+
 export async function uploadParkImage(parkId: number, ): Promise<void> {
 
 }
