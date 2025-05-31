@@ -3,6 +3,7 @@ CREATE TABLE IF NOT EXISTS public.park_review (
     park_id bigint NOT NULL REFERENCES public.park(park_id),
     rating numeric,
     user_ratings_total integer,
+    place_id varchar(255),
     json jsonb,
     created_at timestamp without time zone DEFAULT now()
 );
