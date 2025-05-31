@@ -20,6 +20,18 @@ import {
 } from '../../constants/constants';
 import { getUrl } from '../../libs/storage/storage';
 
+export async function getAllPark(): Promise<Park[]> {
+  const { data, error } = await supabase
+    .from('park')
+    .select('*');
+
+  if (error) {
+    throw error;
+  }
+
+  return data;
+}
+
 export async function getAllDisplayPark(): Promise<DisplayPark[]> {
   const { data, error } = await supabase
     .from('park')

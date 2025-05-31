@@ -12,9 +12,13 @@
     "start:dev": "yarn workspace csv_import_park start:dev",
     "start:prod": "yarn workspace csv_import_park start:prod",
     "start:local": "yarn workspace csv_import_park start:local",
-    "google-review": "yarn workspace google_review_script start",
-    "google-review:dev": "yarn workspace google_review_script start:dev",
-    "google-review:prod": "yarn workspace google_review_script start:prod",
-    "google-review:local": "yarn workspace google_review_script start:local"
+    "google-review_fetch": "yarn workspace google_review_script fetch",
+    "google-review_fetch:dev": "yarn workspace google_review_script fetch:dev",
+    "google-review_fetch:prod": "yarn workspace google_review_script fetch:prod",
+    "google-review_import": "yarn workspace google_review_script import",
+    "google-review_import:dev": "yarn workspace google_review_script import:dev",
+    "google-review_import:prod": "yarn workspace google_review_script import:prod",
+    "google-review_import:local": "yarn workspace google_review_script import:local",
+    "google-review": "yarn google-review_fetch && yarn google-review_import"
   }
 }

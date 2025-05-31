@@ -4,10 +4,14 @@
   "main": "index.js",
   "license": "MIT",
   "scripts": {
-    "start": "ts-node src/index.ts",
-    "start:dev": "NODE_ENV=development ts-node src/index.ts",
-    "start:prod": "NODE_ENV=production ts-node src/index.ts",
-    "start:local": "NODE_ENV=local ts-node src/index.ts"
+    "fetch": "ts-node src/index.ts",
+    "fetch:dev": "NODE_ENV=development ts-node src/index.ts",
+    "fetch:prod": "NODE_ENV=production ts-node src/index.ts",
+    "fetch:local": "NODE_ENV=local ts-node src/index.ts",
+    "import": "ts-node src/index.ts import",
+    "import:dev": "NODE_ENV=development ts-node src/index.ts import",
+    "import:prod": "NODE_ENV=production ts-node src/index.ts import",
+    "import:local": "NODE_ENV=local ts-node src/index.ts import"
   },
   "devDependencies": {
     "@types/node": "^22.15.21",
@@ -15,6 +19,9 @@
     "typescript": "^5.8.3"
   },
   "dependencies": {
-    "csv-writer": "^1.6.0"
+    "csv-writer": "^1.6.0",
+    "@supabase/supabase-js": "^2.49.8",
+    "csv-parse": "^5.6.0",
+    "dotenv": "^16.4.5"
   }
 }

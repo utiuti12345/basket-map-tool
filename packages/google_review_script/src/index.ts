@@ -1,7 +1,14 @@
 import { DisplayPark } from '../../../domain/models/park';
-import { getAllDisplayPark, getOutdoorPark } from '../../../domain/repositories/parks';
+import { getOutdoorPark, getAllPark } from '../../../domain/repositories/parks';
 import { createObjectCsvWriter as createCsvWriter } from 'csv-writer';
 import axios from 'axios';
+import * as path from 'path';
+import * as dotenv from 'dotenv';
+import { insertParkReviewsBulk } from '../../../domain/repositories/parkReviews';
+import { ParkReviewInsert } from '../../../domain/models/parkReview';
+import { readCsvAsObjects, writeObjectsToCsv } from '../../../libs/csv/csv';
+
+dotenv.config();
 
 if (!process.env.GOOGLE_API_KEY) {
   throw new Error('GOOGLE_API_KEY is not set');
@@ -19,7 +26,59 @@ interface ReviewResult {
   json: string | null;
 }
 
-async function main() {
+// Supabaseインポート用
+async function importParkReviewsToSupabase() {
+  const parks = await getAllPark();
+  const parkNameToId: Record<string, number> = {};
+  parks.forEach((row) => {
+    parkNameToId[row.park_name] = row.park_id;
+  });
+
+  const csvPath = path.join(__dirname, '../output/tokyo_parks_with_reviews.csv');
+  type CsvRow = {
+    park_name: string;
+    google_name: string;
+    google_address: string;
+    rating: string;
+    user_ratings_total: string;
+    json: string;
+  };
+  const rows = await readCsvAsObjects<CsvRow>(csvPath);
+
+  const reviews: ParkReviewInsert[] = [];
+  for (const row of rows) {
+    const park_id = parkNameToId[row.park_name];
+    if (!park_id) {
+      console.log(`park_id not found for park_name: ${row.park_name}`);
+      continue;
+    }
+    let jsonData = null;
+    try {
+      jsonData = row.json ? JSON.parse(row.json) : null;
+    } catch (e) {
+      console.log(`Invalid JSON for park_name: ${row.park_name}`);
+    }
+    const rating = row.rating ? parseFloat(row.rating) : null;
+    const user_ratings_total = row.user_ratings_total ? parseInt(row.user_ratings_total, 10) : null;
+
+    const review: ParkReviewInsert = {
+      park_id,
+      rating,
+      user_ratings_total,
+      json: jsonData,
+    };
+    reviews.push(review);
+  }
+  try {
+    await insertParkReviewsBulk(reviews);
+    console.log(`Bulk inserted ${reviews.length} reviews!`);
+  } catch (error: any) {
+    console.log(`Bulk insert error:`, error.message);
+  }
+  console.log('Import finished!');
+}
+
+async function fetchGoogleReviews() {
   const parks: DisplayPark[] = await getOutdoorPark();
   const results: ReviewResult[] = [];
 
@@ -63,20 +122,22 @@ async function main() {
   // レビュー順でソート（降順）
   results.sort((a, b) => (b.rating || 0) - (a.rating || 0));
 
-  const csvWriter = createCsvWriter({
-    path: OUTPUT_CSV,
-    header: [
-      {id: 'park_name', title: 'park_name'},
-      {id: 'google_name', title: 'google_name'},
-      {id: 'google_address', title: 'google_address'},
-      {id: 'rating', title: 'rating'},
-      {id: 'user_ratings_total', title: 'user_ratings_total'},
-      {id: 'json', title: 'json'}
-    ]
-  });
-
-  await csvWriter.writeRecords(results);
+  const header = [
+    {id: 'park_name', title: 'park_name'},
+    {id: 'google_name', title: 'google_name'},
+    {id: 'google_address', title: 'google_address'},
+    {id: 'rating', title: 'rating'},
+    {id: 'user_ratings_total', title: 'user_ratings_total'},
+    {id: 'json', title: 'json'}
+  ];
+  await writeObjectsToCsv(OUTPUT_CSV, header, results);
   console.log('完了しました。tokyo_parks_with_reviews.csv をご確認ください。');
 }
 
-main(); 
+// コマンド引数で分岐
+const mode = process.argv[2];
+if (mode === 'import') {
+  importParkReviewsToSupabase();
+} else {
+  fetchGoogleReviews();
+} 
