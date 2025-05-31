@@ -53,6 +53,10 @@ async function importParkReviewsToSupabase() {
       console.log(`park_id not found for park_name: ${row.park_name}`);
       continue;
     }
+    if (!row.rating) {
+      console.log(`rating not found for park_name: ${row.park_name}`);
+      continue;
+    }
     let jsonData = null;
     try {
       jsonData = row.json ? JSON.parse(row.json) : null;
